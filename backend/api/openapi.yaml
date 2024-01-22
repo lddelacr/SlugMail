@@ -1,0 +1,187 @@
+#
+# CSE186 Assignment 8 Backend
+#
+
+openapi: '3.0.3'
+
+info:
+  description: CSE186 Assignment 8 Backend
+  version: 0.1.0
+  title: CSE186 Assignment 8 Backend
+
+servers:
+  - url: http://localhost:3010/v0
+
+paths:
+  /dummy:
+    get:
+      description: Dummy Endpoint
+      responses:
+        200:
+          description: Succesful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DummyResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /login:
+    post:
+      description: Login
+      requestBody:
+        description: Email and Password
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+        401:
+          description: Fail
+
+  /mail:
+    get:
+      security:
+        - bearerAuth: []  
+      description: Returns All Email
+      parameters:
+        - in: query
+          name: mailbox
+          schema:
+            type: string
+          required: true
+          description: Mailbox name
+      responses:
+        200:
+          description: Email Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailResponse'
+        401:
+          description: Authentification error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                default:
+        403:
+          description: Authentification eror
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      required:
+        - code
+        - message
+
+    EmailResponse:
+      type: array
+      properties:
+        name:
+          type: string
+        mail:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailboxMail'
+      required:
+        - name
+        - mail
+    
+    MailboxMail:
+      type: object
+      properties:
+        id:
+          type: string
+        to:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+        subject:
+          type: string
+        received:
+          type: string
+        from:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+        sent:
+          type: string
+      required:
+        - id
+        - to
+        - subject
+        - received
+        - from
+        - sent
+
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        pass:
+          type: string
+      required:
+        - email
+        - pass
+    
+    Name:
+      type: object
+      properties:
+        name:
+          type: string
+        accessToken:
+          type: string
+      required:
+        - name
+        - accessToken
+    
+    DummyResponse:
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
